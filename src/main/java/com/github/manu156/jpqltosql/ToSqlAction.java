@@ -113,48 +113,107 @@ public class ToSqlAction extends AnAction {
 
     private String translateWhereClause(WhereClause whereClause, Map<String, String> classToTableMap,
                                         Map<String, Map<String, String>> classToFieldToColumnMap, Map<String, String> aliasToFieldMap) {
-        return whereClause.toParsedText();
+        StringBuilder res = new StringBuilder();
+        Expression exp = whereClause.getConditionalExpression();
+        while (true) {
+            if (exp instanceof AndExpression) {
+                ComparisonExpression compExp = (ComparisonExpression)((AndExpression) exp).getRightExpression();
+                if (!compExp.hasLeftExpression() || !compExp.hasRightExpression())
+                    throw new RuntimeException("no lr");
+
+                String compOp = compExp.getComparisonOperator();
+                String lTranslated = "";
+                String rTranslated = "";
+                if (compExp.getLeftExpression() instanceof StateFieldPathExpression) {
+                    StateFieldPathExpression l = (StateFieldPathExpression) compExp.getLeftExpression();
+                    String cl = aliasToFieldMap.get(l.getIdentificationVariable().toParsedText());
+                    lTranslated = l.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(l.getPath(1));
+                }
+                if (compExp.getRightExpression() instanceof StateFieldPathExpression) {
+                    StateFieldPathExpression r = (StateFieldPathExpression) compExp.getRightExpression();
+                    String cl = aliasToFieldMap.get(r.getIdentificationVariable().toParsedText());
+                    rTranslated = r.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(r.getPath(1));
+                } else if (compExp.getRightExpression() instanceof NumericLiteral) {
+                    rTranslated = ((NumericLiteral)compExp.getRightExpression()).getText();
+                } else if (compExp.getRightExpression() instanceof SubExpression) {
+                    rTranslated = compExp.getRightExpression().toParsedText();
+                }
+                res.insert(0, lTranslated + compOp + rTranslated);
+                res.insert(0, " " + ((AndExpression) exp).getActualIdentifier() + " ");
+                exp = ((AndExpression) exp).getLeftExpression();
+            } else if (exp instanceof ComparisonExpression) {
+                ComparisonExpression compExp = (ComparisonExpression) exp;
+                if (!compExp.hasLeftExpression() || !compExp.hasRightExpression())
+                    throw new RuntimeException("no lr");
+
+                String lTranslated = "";
+                String rTranslated = "";
+                if (compExp.getLeftExpression() instanceof StateFieldPathExpression) {
+                    StateFieldPathExpression l = (StateFieldPathExpression) compExp.getLeftExpression();
+                    String cl = aliasToFieldMap.get(l.getIdentificationVariable().toParsedText());
+                    lTranslated = l.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(l.getPath(1));
+                }
+                if (compExp.getRightExpression() instanceof StateFieldPathExpression) {
+                    StateFieldPathExpression r = (StateFieldPathExpression) compExp.getRightExpression();
+                    String cl = aliasToFieldMap.get(r.getIdentificationVariable().toParsedText());
+                    rTranslated = r.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(r.getPath(1));
+                } else if (compExp.getRightExpression() instanceof NumericLiteral) {
+                    rTranslated = ((NumericLiteral)compExp.getRightExpression()).getText();
+                } else if (compExp.getRightExpression() instanceof SubExpression) {
+                    rTranslated = compExp.getRightExpression().toParsedText();
+                }
+
+                String compOp = compExp.getComparisonOperator();
+
+                res.insert(0, lTranslated + compOp + rTranslated);
+
+                exp = null;
+            } else
+                break;
+        }
+        res.insert(0, whereClause.getActualIdentifier() + " ");
+        return res.toString();
     }
 
     private String translateFromClause(FromClause fromClause, Map<String, String> classToTableMap,
                                        Map<String, Map<String, String>> classToFieldToColumnMap, Map<String, String> aliasToFieldMap) {
         StringBuilder res = new StringBuilder(fromClause.getActualIdentifier() + " ");
-        if (((IdentificationVariableDeclaration)((FromClause) fromClause).getDeclaration()).hasRangeVariableDeclaration()) {
-            IdentificationVariableDeclaration ivd = ((IdentificationVariableDeclaration) ((FromClause) fromClause).getDeclaration());
+        if (((IdentificationVariableDeclaration)(fromClause).getDeclaration()).hasRangeVariableDeclaration()) {
+            IdentificationVariableDeclaration ivd = ((IdentificationVariableDeclaration) fromClause.getDeclaration());
             String className = ((RangeVariableDeclaration) ivd.getRangeVariableDeclaration()).getRootObject().toActualText();
             res.append(classToTableMap.get(className));
             res.append(" ");
             res.append(((RangeVariableDeclaration) ivd.getRangeVariableDeclaration()).getIdentificationVariable());
         }
-        if (((IdentificationVariableDeclaration)((FromClause) fromClause).getDeclaration()).hasJoins()) {
-            CollectionExpression joins = (CollectionExpression)((IdentificationVariableDeclaration) ((FromClause) fromClause).getDeclaration()).getJoins();
+        if (((IdentificationVariableDeclaration)fromClause.getDeclaration()).hasJoins()) {
+            CollectionExpression joins = (CollectionExpression)((IdentificationVariableDeclaration)fromClause.getDeclaration()).getJoins();
             for (int i=0; i<joins.childrenSize(); i++) {
-                Expression join = (Join) joins.getChild(i);
-//                res.append(" " + join.getjoinAsspath());
-//                res.append(" " + join.getindeVar);
-//                onClause = join.getOnClause();
-//                res.append(" " + onCla.getIdent);
-//                l = onclause.getLeftE;
-//                r = ;
-//                res.append();
+                Join join = (Join) joins.getChild(i);
+                res.append(" ").append(join.getActualIdentifier());
+                res.append(" ").append(classToTableMap.get(join.getJoinAssociationPath().toParsedText()));
+                res.append(" ").append(join.getIdentificationVariable().toParsedText());
+                OnClause onClause = (OnClause)join.getOnClause();
+                res.append(" ").append(onClause.getActualIdentifier());
+                ComparisonExpression compExp = (ComparisonExpression)onClause.getConditionalExpression();
+                if (!compExp.hasLeftExpression() || !compExp.hasRightExpression())
+                    throw new RuntimeException("no lr");
+                StateFieldPathExpression l = (StateFieldPathExpression) compExp.getLeftExpression();
+                StateFieldPathExpression r = (StateFieldPathExpression) compExp.getRightExpression();
+                String compOp = compExp.getComparisonOperator();
+                String cl = aliasToFieldMap.get(l.getIdentificationVariable().toParsedText());
+                String lTranslated = l.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(l.getPath(1));
+                cl = aliasToFieldMap.get(r.getIdentificationVariable().toParsedText());
+                String rTranslated = r.getIdentificationVariable() + "." + classToFieldToColumnMap.get(cl).get(r.getPath(1));
+                res.append(" ").append(lTranslated).append(compOp).append(rTranslated);
             }
         }
         return res.toString();
 
-//        return fromClause.toParsedText();
-//        String init = fromClause.toParsedText();
-//        for (Map.Entry<String, String> kv : classToTableMap.entrySet()) {
-//            init = init.replace(kv.getKey(), kv.getValue());
-//            init = init.replace(kv.getKey().substring(kv.getKey().lastIndexOf(".")+1), kv.getValue());
-//        }
-//        return init;
     }
 
     private String translateSelectClause(SelectClause selectClause, Map<String, String> classToTableMap,
                                          Map<String, Map<String, String>> classToFieldToColumnMap,
                                          Map<String, String> aliasToFieldMap) {
-//        className = ((ConstructorExpression)selectClause.getSelectExpression()).getClassName();
-//        identifier = ((ConstructorExpression)selectClause.getSelectExpression()).getActualIdentifier();
         CollectionExpression constructorItems = (CollectionExpression) ((ConstructorExpression)selectClause.getSelectExpression()).getConstructorItems();
         StringBuilder selectedColumnsStr = new StringBuilder();
         for (int i=0; i<constructorItems.childrenSize(); i++) {
@@ -166,7 +225,6 @@ public class ToSqlAction extends AnAction {
                 selectedColumnsStr.append(", ");
         }
         return selectClause.getActualIdentifier() + " " + selectedColumnsStr;
-//        return selectClause.toParsedText();
     }
 
     private void populateEntityDbMaps(Map<String, Map<String, String>> classToFieldToColumnMap, Map<String, String> classToTableMap, List<PsiClass> psiClasses) {
