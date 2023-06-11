@@ -1,1 +1,2 @@
-# jpqltosql
+# JPQL to SQL
+
