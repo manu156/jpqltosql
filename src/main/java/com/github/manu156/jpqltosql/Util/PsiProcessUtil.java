@@ -1,4 +1,4 @@
-package com.github.manu156.jpqltosql;
+package com.github.manu156.jpqltosql.Util;
 
 import com.intellij.openapi.util.text.Strings;
 import com.intellij.psi.PsiAnnotation;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Util {
+public class PsiProcessUtil {
     public static Map<String, String> getKeyValueMap(@NotNull PsiAnnotation psiAnnotation) {
         PsiNameValuePair[] psiNameValuePairs = psiAnnotation.getParameterList().getAttributes();
         Map<String, String> result = new HashMap<>();

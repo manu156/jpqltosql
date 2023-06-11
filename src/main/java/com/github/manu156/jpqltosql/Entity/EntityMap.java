@@ -1,29 +1,25 @@
-package com.github.manu156.jpqltosql;
+package com.github.manu156.jpqltosql.Entity;
 
-import com.intellij.openapi.actionSystem.CommonDataKeys;
+
+import com.github.manu156.jpqltosql.Execption.FailedTranslation;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import org.eclipse.persistence.jpa.jpql.parser.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static com.github.manu156.jpqltosql.Util.getValueByKey;
+
+import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getValueByKey;
 
 public class EntityMap {
     public Map<String, String> classToTableMap;
     public Map<String, Map<String, String>> classToFieldToColumnMap;
     public Map<String, String> aliasToFieldMap;
-    private Project project;
-
-    public EntityMap() {
-        throw new RuntimeException();
-    }
+    private final Project project;
 
     public EntityMap(Project project) {
         classToTableMap = new HashMap<>();
@@ -40,18 +36,21 @@ public class EntityMap {
         if (!classToFieldToColumnMap.containsKey(clazz))
             populateClass(clazz);
         if (!classToFieldToColumnMap.containsKey(clazz))
-            return field;
-        return classToFieldToColumnMap.get(clazz).getOrDefault(field, field);
+            throw new FailedTranslation();
+        if (!classToFieldToColumnMap.get(clazz).containsKey(field))
+            throw new FailedTranslation();
+        return classToFieldToColumnMap.get(clazz).get(field);
     }
 
     public String getTableByClass(String clazz) {
         if (!classToTableMap.containsKey(clazz))
             populateClass(clazz);
-        return classToTableMap.getOrDefault(clazz, clazz);
+        if (!classToTableMap.containsKey(clazz))
+            throw new FailedTranslation();
+        return classToTableMap.get(clazz);
     }
 
     private void populateClass(String clazz) {
-        List<PsiClass> psiClasses = new ArrayList<>();
         PsiClass[] possibleClasses = PsiShortNamesCache.getInstance(project)
                 .getClassesByName(clazz, GlobalSearchScope.allScope(project));
 
@@ -94,10 +93,15 @@ public class EntityMap {
         aliasToFieldMap.put(rvd.getIdentificationVariable().toParsedText(), rvd.getRootObject().toParsedText());
 
         if (fromClause.hasDeclaration()) {
-            if (((IdentificationVariableDeclaration) fromClause.getDeclaration()).hasJoins()) {
-                CollectionExpression joins = (CollectionExpression) ((IdentificationVariableDeclaration) fromClause.getDeclaration()).getJoins();
-                for (Expression child : joins.children()) {
-                    Join join = (Join) child;
+            if (ivd.hasJoins()) {
+                Expression joins = ivd.getJoins();
+                if (joins instanceof CollectionExpression) {
+                    for (Expression child : joins.children()) {
+                        Join join = (Join) child;
+                        aliasToFieldMap.put(join.getIdentificationVariable().toParsedText(), join.getJoinAssociationPath().toParsedText());
+                    }
+                } else if (joins instanceof Join) {
+                    Join join = (Join) joins;
                     aliasToFieldMap.put(join.getIdentificationVariable().toParsedText(), join.getJoinAssociationPath().toParsedText());
                 }
             }

@@ -1,23 +1,24 @@
-package com.github.manu156.jpqltosql;
+package com.github.manu156.jpqltosql.Action;
 
+import com.github.manu156.jpqltosql.Entity.EntityMap;
+import com.github.manu156.jpqltosql.Execption.FailedTranslation;
+import com.github.manu156.jpqltosql.Execption.QueryNotFound;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Caret;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.text.Strings;
+import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.eclipse.persistence.jpa.jpql.parser.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.awt.datatransfer.StringSelection;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static com.github.manu156.jpqltosql.Util.getKeyValueMap;
+import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getKeyValueMap;
 
 public class ToSqlAction extends AnAction {
     @Override
@@ -29,22 +30,50 @@ public class ToSqlAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        PsiFile psiFile = e.getRequiredData(CommonDataKeys.PSI_FILE);
-        if (!"JAVA".equalsIgnoreCase(psiFile.getFileType().getName()))
-            return;
-        Caret caret = e.getRequiredData(CommonDataKeys.CARET);
-        PsiElement psiElement = psiFile.findElementAt(caret.getOffset());
-        PsiAnnotation psiAnnotation = PsiTreeUtil.getParentOfType(psiElement, PsiAnnotation.class);
-        if (null == psiAnnotation)
-            return;
+        String name = "";
+        try {
+            PsiFile psiFile = e.getRequiredData(CommonDataKeys.PSI_FILE);
+            if (!"JAVA".equalsIgnoreCase(psiFile.getFileType().getName()))
+                return;
+            Caret caret = e.getRequiredData(CommonDataKeys.CARET);
+            PsiElement psiElement = psiFile.findElementAt(caret.getOffset());
+            PsiAnnotation psiAnnotation = PsiTreeUtil.getParentOfType(psiElement, PsiAnnotation.class);
+            if (null == psiAnnotation)
+                return;
 
-        Map<String, String> vp = getKeyValueMap(psiAnnotation);
-        String name = vp.get("name");
-        String query = vp.get("query");
+            Map<String, String> vp = getKeyValueMap(psiAnnotation);
+            name = vp.get("name");
+            String query = vp.get("query");
+            if (!vp.containsKey("name") || !vp.containsKey("query"))
+                throw new QueryNotFound();
 
-        JPQLExpression jpql = new JPQLExpression(query, new JPQLGrammar3_1());
-        String sql = translateExpression(jpql.getQueryStatement(), new EntityMap(e.getRequiredData(CommonDataKeys.PROJECT)));
-        Messages.showInfoMessage(sql, name);
+            JPQLExpression jpql = new JPQLExpression(query, new JPQLGrammar3_1());
+            String sql = translateExpression(jpql.getQueryStatement(), new EntityMap(e.getRequiredData(CommonDataKeys.PROJECT)));
+            CopyPasteManager.getInstance().setContents(new StringSelection(sql));
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("JPQL2SQL")
+                    .createNotification("Copied to SQL: " + name, NotificationType.INFORMATION)
+                    .notify(e.getRequiredData(CommonDataKeys.PROJECT));
+        } catch (QueryNotFound ex) {
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("JPQL2SQL")
+                    .createNotification("No query found", NotificationType.ERROR)
+                    .notify(e.getRequiredData(CommonDataKeys.PROJECT));
+        } catch (FailedTranslation ex) {
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("JPQL2SQL")
+                    .createNotification("Failed to translate to SQL" +
+                                    (!Objects.equals(name, "") ? ":" + name : ""),
+                            NotificationType.ERROR)
+                    .notify(e.getRequiredData(CommonDataKeys.PROJECT));
+        } catch (Exception ex) {
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("JPQL2SQL")
+                    .createNotification("Failed to translate to SQL: Unknown Error" +
+                            (!Objects.equals(name, "") ? ":" + name : ""),
+                            NotificationType.ERROR)
+                    .notify(e.getRequiredData(CommonDataKeys.PROJECT));
+        }
     }
 
     private String translateExpression(Expression exp, EntityMap entityMap) {
@@ -85,10 +114,8 @@ public class ToSqlAction extends AnAction {
                 res.append(((RangeVariableDeclaration) ivd.getRangeVariableDeclaration()).getIdentificationVariable());
             }
             if (((IdentificationVariableDeclaration)fromClause.getDeclaration()).hasJoins()) {
-                CollectionExpression joins = (CollectionExpression)((IdentificationVariableDeclaration)fromClause.getDeclaration()).getJoins();
-                for (int i=0; i<joins.childrenSize(); i++) {
-                    res.append(translateExpression(joins.getChild(i), entityMap));
-                }
+                Expression joins = ((IdentificationVariableDeclaration)fromClause.getDeclaration()).getJoins();
+                res.append(translateExpression(joins, entityMap));
             }
             return res.toString();
         } else if (exp instanceof IdentificationVariableDeclaration) {
@@ -145,8 +172,6 @@ public class ToSqlAction extends AnAction {
         } else if (exp instanceof SelectClause) {
             return ((SelectClause)exp).getActualIdentifier() + " " +
                     translateExpression(((SelectClause)exp).getSelectExpression(), entityMap);
-        } else if (exp instanceof UpdateStatement) {
-            // todo
         } else if (exp instanceof StringLiteral) {
             return exp.toParsedText();
         } else if (exp instanceof NullComparisonExpression) {
