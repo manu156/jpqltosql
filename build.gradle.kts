@@ -5,7 +5,8 @@ plugins {
 }
 
 group = "com.github.manu156"
-version = "1.0-SNAPSHOT"
+version = "0.3-ALPHA"
+//version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
