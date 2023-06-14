@@ -23,8 +23,12 @@ import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getKeyValueMap;
 public class ToSqlAction extends AnAction {
     @Override
     public void update(AnActionEvent e) {
-        PsiFile psiFile = e.getRequiredData(CommonDataKeys.PSI_FILE);
-        Caret caret = e.getRequiredData(CommonDataKeys.CARET);
+        PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
+        Caret caret = e.getData(CommonDataKeys.CARET);
+        if (null == psiFile || null == caret) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
         e.getPresentation().setEnabled(null != psiFile.findElementAt(caret.getOffset()));
     }
 
