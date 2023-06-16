@@ -28,7 +28,7 @@ public class ToSqlAction extends AnAction {
         if (null == psiFile || null == caret) {
             e.getPresentation().setEnabled(false);
             return;
-        }
+        }// todo add more strict checks
         e.getPresentation().setEnabled(null != psiFile.findElementAt(caret.getOffset()));
     }
 
@@ -51,7 +51,7 @@ public class ToSqlAction extends AnAction {
             if (!vp.containsKey("name") || !vp.containsKey("query"))
                 throw new QueryNotFound();
 
-            JPQLExpression jpql = new JPQLExpression(query, new JPQLGrammar3_1());
+            JPQLExpression jpql = new JPQLExpression(query, new JPQLGrammar3_1(), false);
             String sql = translateExpression(jpql.getQueryStatement(), new EntityMap(e.getRequiredData(CommonDataKeys.PROJECT)));
             CopyPasteManager.getInstance().setContents(new StringSelection(sql));
             NotificationGroupManager.getInstance()

@@ -13,6 +13,8 @@ import org.eclipse.persistence.jpa.jpql.parser.*;
 import java.util.*;
 
 
+import static com.github.manu156.jpqltosql.Const.Constants.columnAnnotationNames;
+import static com.github.manu156.jpqltosql.Const.Constants.tableAnnotationName;
 import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getValueByKey;
 
 public class EntityMap {
@@ -59,7 +61,7 @@ public class EntityMap {
 
     private void populateEntityDbMaps(PsiClass[] psiClasses) {
         for (PsiClass psiClass: psiClasses) {
-            PsiAnnotation psiClassAnnotation = psiClass.getAnnotation("javax.persistence.Table");
+            PsiAnnotation psiClassAnnotation = psiClass.getAnnotation(tableAnnotationName);
             if (null == psiClassAnnotation)
                 continue;
             if (null == psiClass.getQualifiedName())
@@ -76,13 +78,14 @@ public class EntityMap {
             PsiField[] psiFields = psiClass.getAllFields();
             for (PsiField psiField : psiFields) {
                 String varName = psiField.getName();
-                PsiAnnotation psiColumnAnnotation = psiField.getAnnotation("javax.persistence.Column");
-                if (null == psiColumnAnnotation)
-                    continue;
-                String colName = getValueByKey(psiColumnAnnotation, "name");
-                if (null == colName)
-                    continue;
-                fieldToColumnMap.put(varName, colName);
+                for (PsiAnnotation psiColumnAnnotation: psiField.getAnnotations()) {
+                    if (!columnAnnotationNames.contains(psiColumnAnnotation.getQualifiedName()))
+                        continue;
+                    String colName = getValueByKey(psiColumnAnnotation, "name");
+                    if (null == colName)
+                        continue;
+                    fieldToColumnMap.put(varName, colName);
+                }
             }
         }
     }
