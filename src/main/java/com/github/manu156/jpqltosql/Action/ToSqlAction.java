@@ -83,8 +83,7 @@ public class ToSqlAction extends AnAction {
     private String translateExpression(Expression exp, EntityMap entityMap) {
         if (exp instanceof NumericLiteral) {
             return ((NumericLiteral)exp).getText();
-        } else if (exp instanceof StateFieldPathExpression) {
-            StateFieldPathExpression pathExp = (StateFieldPathExpression) exp;
+        } else if (exp instanceof StateFieldPathExpression pathExp) {
             String cl = entityMap.getClassByAlias(pathExp.getIdentificationVariable().toParsedText());
             return pathExp.getIdentificationVariable() + "." + entityMap.getColumnNameByClassAndField(cl, pathExp.getPath(1));
         } else if (exp instanceof SubExpression) {
@@ -93,11 +92,9 @@ public class ToSqlAction extends AnAction {
             return exp.toParsedText();
         } else if (exp instanceof IdentificationVariable) {
             return exp.toParsedText();
-        } else if (exp instanceof ConstructorExpression) {
-            ConstructorExpression consExp = (ConstructorExpression) exp;
+        } else if (exp instanceof ConstructorExpression consExp) {
             return translateExpression(consExp.getConstructorItems(), entityMap);
-        } else if (exp instanceof CollectionExpression) {
-            CollectionExpression constructorItems = (CollectionExpression) exp;
+        } else if (exp instanceof CollectionExpression constructorItems) {
             StringBuilder selectedColumnsStr = new StringBuilder();
             for (int i=0; i<constructorItems.childrenSize(); i++) {
                 selectedColumnsStr.append(translateExpression(constructorItems.getChild(i), entityMap));
@@ -107,8 +104,7 @@ public class ToSqlAction extends AnAction {
                     selectedColumnsStr.append(" ");
             }
             return selectedColumnsStr.toString();
-        } else if (exp instanceof FromClause) {
-            FromClause fromClause = (FromClause) exp;
+        } else if (exp instanceof FromClause fromClause) {
             StringBuilder res = new StringBuilder(fromClause.getActualIdentifier() + " ");
             if (((IdentificationVariableDeclaration)(fromClause).getDeclaration()).hasRangeVariableDeclaration()) {
                 IdentificationVariableDeclaration ivd = ((IdentificationVariableDeclaration) fromClause.getDeclaration());
@@ -125,16 +121,14 @@ public class ToSqlAction extends AnAction {
         } else if (exp instanceof IdentificationVariableDeclaration) {
             throw new RuntimeException("not def"); //todo
 
-        } else if (exp instanceof ComparisonExpression) {
-            ComparisonExpression compExp = (ComparisonExpression) exp;
+        } else if (exp instanceof ComparisonExpression compExp) {
             if (!compExp.hasLeftExpression() || !compExp.hasRightExpression())
                 throw new RuntimeException("no lr");
             String compOp = compExp.getComparisonOperator();
             String lTranslated = translateExpression(compExp.getLeftExpression(), entityMap);
             String rTranslated = translateExpression(compExp.getRightExpression(), entityMap);
             return " " + lTranslated + compOp + rTranslated;
-        } else if (exp instanceof Join) {
-            Join join = (Join) exp;
+        } else if (exp instanceof Join join) {
             OnClause onClause = (OnClause)join.getOnClause();
 
             return " " + join.getActualIdentifier() +
@@ -157,13 +151,11 @@ public class ToSqlAction extends AnAction {
             }
             res.insert(0, ((WhereClause)exp).getActualIdentifier() + " ");
             return res.toString();
-        } else if (exp instanceof AndExpression) {
-            AndExpression andExpression = (AndExpression) exp;
+        } else if (exp instanceof AndExpression andExpression) {
             return translateExpression(andExpression.getLeftExpression(), entityMap) + " " +
                     andExpression.getActualIdentifier() + " " +
                     translateExpression(andExpression.getRightExpression(), entityMap);
-        } else if (exp instanceof SelectStatement) {
-            SelectStatement s = (SelectStatement) exp;
+        } else if (exp instanceof SelectStatement s) {
             if (s.hasFromClause())
                 entityMap.populateAliasMap((FromClause) s.getFromClause());
 
@@ -178,21 +170,18 @@ public class ToSqlAction extends AnAction {
                     translateExpression(((SelectClause)exp).getSelectExpression(), entityMap);
         } else if (exp instanceof StringLiteral) {
             return exp.toParsedText();
-        } else if (exp instanceof NullComparisonExpression) {
-            NullComparisonExpression nullCompExp = (NullComparisonExpression) exp;
+        } else if (exp instanceof NullComparisonExpression nullCompExp) {
             return translateExpression((nullCompExp).getExpression(), entityMap) + " " +
                     nullCompExp.getActualIsIdentifier() + " " +
                     (nullCompExp.hasNot() ? nullCompExp.getActualNotIdentifier() + " " : "") +
                     nullCompExp.getActualNullIdentifier();
-        } else if (exp instanceof BetweenExpression) {
-            BetweenExpression btwExp = (BetweenExpression) exp;
+        } else if (exp instanceof BetweenExpression btwExp) {
             return translateExpression(btwExp.getExpression(), entityMap) + " " +
                     (btwExp.hasNot() ? btwExp.getActualNotIdentifier() + " " : "") +
                     btwExp.getActualBetweenIdentifier() + " " +
                     translateExpression(btwExp.getLowerBoundExpression(), entityMap) + " " +
                     translateExpression(btwExp.getUpperBoundExpression(), entityMap);
-        } else if (exp instanceof ResultVariable) {
-            ResultVariable resExp = (ResultVariable) exp;
+        } else if (exp instanceof ResultVariable resExp) {
             return translateExpression(resExp.getSelectExpression(), entityMap) + " " +
                     resExp.getActualAsIdentifier() + " " +
                     resExp.getResultVariable().toParsedText();
@@ -202,16 +191,14 @@ public class ToSqlAction extends AnAction {
         } else if (exp instanceof GroupByClause) {
             return ((GroupByClause) exp).getActualIdentifier() + " " +
                     translateExpression(((GroupByClause) exp).getGroupByItems(), entityMap);
-        } else if (exp instanceof OrExpression) {
-            OrExpression orExpression = (OrExpression) exp;
+        } else if (exp instanceof OrExpression orExpression) {
             return translateExpression(orExpression.getLeftExpression(), entityMap) + " " +
                     orExpression.getActualIdentifier() + " " +
                     translateExpression(orExpression.getRightExpression(), entityMap);
         } else if (exp instanceof HavingClause) {
             return ((HavingClause) exp).getActualIdentifier() + " " +
                     translateExpression(((HavingClause) exp).getConditionalExpression(), entityMap);
-        } else if (exp instanceof InExpression) {
-            InExpression inExp = (InExpression) exp;
+        } else if (exp instanceof InExpression inExp) {
             return translateExpression(inExp.getExpression(), entityMap) + " " +
                     (inExp.hasNot() ? inExp.getActualNotIdentifier() + " " : "") +
                     (inExp.hasInItems() ? inExp.getActualInIdentifier() + " " : "") +
