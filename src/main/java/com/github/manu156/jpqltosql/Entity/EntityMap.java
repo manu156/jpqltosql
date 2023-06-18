@@ -30,25 +30,25 @@ public class EntityMap {
         this.project = project;
     }
 
-    public String getClassByAlias(String alias) {
-        return this.aliasToFieldMap.getOrDefault(alias, alias);
+    public String getClassByAlias(String alias, Tolerance tolerance) {
+        return this.aliasToFieldMap.getOrDefault(alias, tolerance.getValue(alias));
     }
 
-    public String getColumnNameByClassAndField(String clazz, String field) {
+    public String getColumnNameByClassAndField(String clazz, String field, Tolerance tolerance) {
         if (!classToFieldToColumnMap.containsKey(clazz))
             populateClass(clazz);
         if (!classToFieldToColumnMap.containsKey(clazz))
-            throw new FailedTranslation();
+            return tolerance.getValue(field);
         if (!classToFieldToColumnMap.get(clazz).containsKey(field))
-            throw new FailedTranslation();
+            return tolerance.getValue(field);
         return classToFieldToColumnMap.get(clazz).get(field);
     }
 
-    public String getTableByClass(String clazz) {
+    public String getTableByClass(String clazz, Tolerance tolerance) {
         if (!classToTableMap.containsKey(clazz))
             populateClass(clazz);
         if (!classToTableMap.containsKey(clazz))
-            throw new FailedTranslation();
+            return tolerance.getValue(clazz);
         return classToTableMap.get(clazz);
     }
 
