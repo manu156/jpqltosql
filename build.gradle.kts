@@ -5,9 +5,13 @@ plugins {
 }
 
 group = "com.github.manu156"
-version = "0.6-ALPHA"
-val ideaVersion: String by project
+version = "0.6-223"
 //version = "1.0-SNAPSHOT"
+
+val sinceBuildPluginXml: String by project
+val untilBuildPluginXml: String by project
+val ideaVersion: String by project
+
 
 repositories {
     mavenCentral()
@@ -21,9 +25,8 @@ dependencies {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-//    version.set("2022.1.4")
-    version.set("2023.1.2")
-//    version.set(ideaVersion)
+    version.set(ideaVersion)
+    updateSinceUntilBuild.set(false)
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.java"))
@@ -40,8 +43,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("231")
-//        untilBuild.set("232.*")
+        sinceBuild.set(sinceBuildPluginXml)
+        untilBuild.set(untilBuildPluginXml)
     }
 
     signPlugin {
