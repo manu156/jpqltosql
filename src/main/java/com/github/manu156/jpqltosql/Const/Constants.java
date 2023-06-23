@@ -5,4 +5,5 @@ import java.util.*;
 public class Constants {
     public static Set<String> columnAnnotationNames = new HashSet<>(List.of("javax.persistence.Column"));
     public static String tableAnnotationName = "javax.persistence.Table";
+    public static String namedQueryAnnotation = "javax.persistence.NamedQuery";
 }
