@@ -10,7 +10,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.github.manu156.jpqltosql.Util.CStringUtil.*;
 
 public class PsiProcessUtil {
     public static Map<String, String> getKeyValueMap(@NotNull PsiAnnotation psiAnnotation) {
@@ -20,16 +23,7 @@ public class PsiProcessUtil {
             if (null != pair.getLiteralValue())
                 result.put(pair.getName(), pair.getLiteralValue());
             else if (null != pair.getValue()) {
-                String value;
-                if (pair.getValue() instanceof PsiPolyadicExpression)
-                    value = Strings.join(Arrays.stream(((PsiPolyadicExpression)pair.getValue()).getOperands())
-                            .map(t -> t.getText().length() > 2 ? t.getText().substring(1, t.getText().length()-1) : "")
-                            .collect(Collectors.toList()), "");
-                else {
-                    String text = pair.getValue().getText();
-                    value = text.length() > 2 ? text.substring(1, text.length() - 1) : "";
-                }
-                result.put(pair.getName(), value);
+                result.put(pair.getName(), getString(pair));
             }
         }
         return result;
@@ -42,18 +36,22 @@ public class PsiProcessUtil {
             if (null != pair.getLiteralValue() && name.equals(pair.getName()))
                 return pair.getLiteralValue();
             else if (null != pair.getValue() && name.equals(pair.getName())) {
-                String value;
-                if (pair.getValue() instanceof PsiPolyadicExpression)
-                    value = Strings.join(Arrays.stream(((PsiPolyadicExpression)pair.getValue()).getOperands())
-                            .map(t -> t.getText().length() > 2 ? t.getText().substring(1, t.getText().length()-1) : "")
-                            .collect(Collectors.toList()), "");
-                else {
-                    String text = pair.getValue().getText();
-                    value = text.length() > 2 ? text.substring(1, text.length() - 1) : "";
-                }
-                return value;
+                return getString(pair);
             }
         }
         return null;
+    }
+
+    private static String getString(PsiNameValuePair pair) {
+        String value;
+        if (pair.getValue() instanceof PsiPolyadicExpression)
+            value = Strings.join(Arrays.stream(((PsiPolyadicExpression) pair.getValue()).getOperands())
+                    .map(t -> strip(strip(t.getText(), '"'), "\\n"))
+                    .collect(Collectors.toList()), "");
+        else {
+            String text = Objects.requireNonNull(pair.getValue()).getText();
+            value = strip(text, '"');
+        }
+        return value;
     }
 }

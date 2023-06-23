@@ -100,6 +100,8 @@ public class ToSqlAction extends AnAction {
         } else if (exp instanceof InputParameter) {
             return exp.toParsedText();
         } else if (exp instanceof IdentificationVariable) {
+            if (entityMap.aliasToFieldMap.containsKey(exp.toParsedText()))
+                return exp.toParsedText() + ".*";
             return exp.toParsedText();
         } else if (exp instanceof ConstructorExpression consExp) {
             return translateExpression(consExp.getConstructorItems(), entityMap, tolerance);
