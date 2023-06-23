@@ -19,7 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.datatransfer.StringSelection;
 import java.util.*;
 
+import static com.github.manu156.jpqltosql.Const.Constants.namedQueryAnnotation;
 import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getKeyValueMap;
+import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getValueByKey;
 
 public class ToSqlAction extends AnAction {
     @Override
@@ -29,8 +31,12 @@ public class ToSqlAction extends AnAction {
         if (null == psiFile || null == caret) {
             e.getPresentation().setEnabled(false);
             return;
-        }// todo add more strict checks
-        e.getPresentation().setEnabled(null != psiFile.findElementAt(caret.getOffset()));
+        }
+        PsiElement psiElement = psiFile.findElementAt(caret.getOffset());
+        PsiAnnotation psiAnnotation = PsiTreeUtil.getParentOfType(psiElement, PsiAnnotation.class);
+        e.getPresentation().setEnabled(null != psiAnnotation
+                && namedQueryAnnotation.equals(psiAnnotation.getQualifiedName())
+                && null != getValueByKey(psiAnnotation, "query"));
     }
 
     @Override
@@ -127,9 +133,6 @@ public class ToSqlAction extends AnAction {
                 res.append(translateExpression(joins, entityMap, tolerance));
             }
             return res.toString();
-        } else if (exp instanceof IdentificationVariableDeclaration) {
-            throw new RuntimeException("not def"); //todo
-
         } else if (exp instanceof ComparisonExpression compExp) {
             if (!compExp.hasLeftExpression() || !compExp.hasRightExpression())
                 throw new RuntimeException("no lr");
