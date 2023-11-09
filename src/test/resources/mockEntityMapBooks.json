@@ -1,0 +1,19 @@
+[
+  {
+    "name": {
+      "className": "tableName"
+    },
+    "FieldToColumn": {
+      "colA": "col_a",
+      "colB": "col_b"
+    }
+  },
+  {
+    "name": {
+      "className2": "tableName2"
+    },
+    "FieldToColumn": {
+      "colC": "col_c"
+    }
+  }
+]
