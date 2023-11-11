@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run: |
           PROPERTIES="$(./gradlew properties --console=plain -q)"
-          VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
+          VERSION="$(echo "$PROPERTIES" | grep -oE "version: [0-9.]+([^ ])*" | cut -f2- -d ' ')"
           CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
