@@ -76,13 +76,6 @@ tasks {
         kotlinOptions.jvmTarget = "17"
     }
 
-    withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            events("passed", "skipped", "failed")
-        }
-    }
-
     patchPluginXml {
         sinceBuild.set(sinceBuildPluginXml)
         untilBuild.set(untilBuildPluginXml)
