@@ -6,3 +6,4 @@ Get it from Marketplace: [Get This Plugin](https://plugins.jetbrains.com/plugin/
 <br>
 <br>
 <img src="./media/screenshot1.png" width="700" height="485" />
+
