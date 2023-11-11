@@ -17,9 +17,10 @@ val sinceBuildPluginXml: String by project
 val untilBuildPluginXml: String by project
 val ideaVersion: String by project
 val targetIdePlatform: String by project
+val pluginVersion: String by project
 
 group = "com.github.manu156"
-version = "1.1-$ideaVersion-$targetIdePlatform"
+version = "$pluginVersion-$ideaVersion-$targetIdePlatform"
 
 repositories {
     mavenCentral()
@@ -51,7 +52,7 @@ qodana {
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
-    version.set(properties("pluginVersion"))
+    version.set("$pluginVersion")
     groups.empty()
     repositoryUrl.set(properties("pluginRepositoryUrl"))
 }
