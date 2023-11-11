@@ -1,11 +1,13 @@
 import subprocess
 import sys
 
-source_string = """# Existent IDE versions can be found in the following repos:
+source_string = """
+# *** DO NOT EDIT THESE LINES. FOLLOWING PROPERTIES ARE SET BY BUILD SCRIPT. see build_script.py
+# Existent IDE versions can be found in the following repos:
 # https://www.jetbrains.com/intellij-repository/releases/
 # https://www.jetbrains.com/intellij-repository/snapshots/
 # please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description
-
+# 
 pluginGroup = com.github.manu156
 pluginName = jpql2sql
 pluginVersion=1.1.1
