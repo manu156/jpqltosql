@@ -10,6 +10,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.util.text.Strings;
@@ -24,13 +25,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-import static com.github.manu156.jpqltosql.Const.Constants.namedQueryAnnotation;
+import static com.github.manu156.jpqltosql.Const.Constants.namedQueryAnnotations;
 import static com.github.manu156.jpqltosql.Util.CStringUtil.strip;
 import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getKeyValueMap;
 import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getValueByKey;
 
 
 public class ToSqlAction extends AnAction {
+
+    private Logger log = Logger.getInstance(ToSqlAction.class);
+
     @Override
     public void update(AnActionEvent e) {
         PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
@@ -38,10 +42,13 @@ public class ToSqlAction extends AnAction {
         if (null != psiFile && null != caret) {
             PsiElement psiElement = psiFile.findElementAt(caret.getOffset());
             PsiAnnotation psiAnnotation = PsiTreeUtil.getParentOfType(psiElement, PsiAnnotation.class);
-            if (null != psiAnnotation && namedQueryAnnotation.equals(psiAnnotation.getQualifiedName())
-                    && null != getValueByKey(psiAnnotation, "query")) {
-                e.getPresentation().setEnabled(true);
-                return;
+
+            for (String namedQueryAnnotation : namedQueryAnnotations) {
+                if (null != psiAnnotation && namedQueryAnnotation.equals(psiAnnotation.getQualifiedName())
+                        && null != getValueByKey(psiAnnotation, "query")) {
+                    e.getPresentation().setEnabled(true);
+                    return;
+                }
             }
 
             PsiPolyadicExpression psiDeclaration = PsiTreeUtil.getParentOfType(psiElement, PsiPolyadicExpression.class);
@@ -97,9 +104,11 @@ public class ToSqlAction extends AnAction {
         } catch (QueryNotFound ex) {
             sendNotification(e, "No query found!", NotificationType.ERROR);
         } catch (FailedTranslation ex) {
+            log.error("Failed to translate query", ex);
             sendNotification(e, "Failed to translate " + (!Objects.equals(name, "") ? ":" + name : ""),
                             NotificationType.ERROR);
         } catch (Exception ex) {
+            log.error("Unexpected error", ex);
             sendNotification(e, "Failed to translate! Unknown Error " + (!Objects.equals(name, "") ? ":" + name : ""),
                             NotificationType.ERROR);
         }

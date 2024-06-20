@@ -14,6 +14,7 @@ import java.util.*;
 
 
 import static com.github.manu156.jpqltosql.Const.Constants.*;
+import static com.github.manu156.jpqltosql.Const.Constants.entityAnnotationNames;
 import static com.github.manu156.jpqltosql.Util.PsiProcessUtil.getValueByKey;
 
 public class EntityMapImpl implements EntityMap {
@@ -52,7 +53,8 @@ public class EntityMapImpl implements EntityMap {
     @Override
     public String getCloseColumn(String field) {
         for (String aClass : mainClass) {
-            if (null != classToFieldToColumnMap.get(aClass).get(field)) {
+            if (classToFieldToColumnMap.containsKey(aClass)
+                    && classToFieldToColumnMap.get(aClass).containsKey(field)) {
                 return classToFieldToColumnMap.get(aClass).get(field);
             }
         }
@@ -79,7 +81,15 @@ public class EntityMapImpl implements EntityMap {
     @Override
     public void populateEntityDbMaps(PsiClass[] psiClasses) {
         for (PsiClass psiClass: psiClasses) {
-            PsiAnnotation psiEntityAnnotation = psiClass.getAnnotation(entityAnnotationName);
+            // todo: implement proper logic
+            PsiAnnotation psiEntityAnnotation = null;
+            for (String entityAnnotationName : entityAnnotationNames) {
+                psiEntityAnnotation = psiClass.getAnnotation(entityAnnotationName);
+                if (psiEntityAnnotation != null) {
+                    break;
+                }
+            }
+
             if (null == psiEntityAnnotation)
                 continue;
             String className = psiClass.getQualifiedName();
@@ -87,7 +97,16 @@ public class EntityMapImpl implements EntityMap {
                 continue;
             if (className.contains("."))
                 className = className.substring(psiClass.getQualifiedName().lastIndexOf(".")+1);
-            PsiAnnotation psiClassAnnotation = psiClass.getAnnotation(tableAnnotationName);
+
+            // todo: implement proper logic
+            PsiAnnotation psiClassAnnotation = null;
+            for (String tableAnnotationName : tableAnnotationNames) {
+                psiClassAnnotation = psiClass.getAnnotation(tableAnnotationName);
+                if (psiClassAnnotation != null) {
+                    break;
+                }
+            }
+
             String tableName;
             if (null == psiClassAnnotation || null == psiClass.getQualifiedName())
                 tableName = className;
