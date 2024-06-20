@@ -10,7 +10,7 @@ source_string = """
 # 
 pluginGroup = com.github.manu156
 pluginName = jpql2sql
-pluginVersion=1.1.1
+pluginVersion=1.3.0
 pluginRepositoryUrl = https://github.com/manu156/jpqltosql
 
 """
