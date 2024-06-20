@@ -10,18 +10,12 @@ source_string = """
 # 
 pluginGroup = com.github.manu156
 pluginName = jpql2sql
-pluginVersion=1.1.1
+pluginVersion=2.0.0
 pluginRepositoryUrl = https://github.com/manu156/jpqltosql
 
 """
 
 ic_versions = [
-    {
-        "targetIdePlatform": "IC",
-        "ideaVersion": "2022.2",
-        "sinceBuildPluginXml": "222",
-        "untilBuildPluginXml": "222.*"
-    },
     {
         "targetIdePlatform": "IC",
         "ideaVersion": "2022.3",
@@ -36,19 +30,31 @@ ic_versions = [
     },
     {
         "targetIdePlatform": "IC",
-        "ideaVersion": "232.7754-EAP-CANDIDATE-SNAPSHOT",
-        "sinceBuildPluginXml": "231",
+        "ideaVersion": "2023.2",
+        "sinceBuildPluginXml": "232",
+        "untilBuildPluginXml": "232.*"
+    },
+    {
+        "targetIdePlatform": "IC",
+        "ideaVersion": "2023.3",
+        "sinceBuildPluginXml": "233",
         "untilBuildPluginXml": "233.*"
+    },
+    {
+        "targetIdePlatform": "IC",
+        "ideaVersion": "2024.1",
+        "sinceBuildPluginXml": "241",
+        "untilBuildPluginXml": "241.*"
+    },
+    {
+        "targetIdePlatform": "IC",
+        "ideaVersion": "2024.2",
+        "sinceBuildPluginXml": "242",
+        "untilBuildPluginXml": "243.*"
     }
 ]
 
 iu_versions = [
-    {
-        "targetIdePlatform": "IU",
-        "ideaVersion": "2022.2",
-        "sinceBuildPluginXml": "222",
-        "untilBuildPluginXml": "222.*"
-    },
     {
         "targetIdePlatform": "IU",
         "ideaVersion": "2022.3",
@@ -65,7 +71,25 @@ iu_versions = [
         "targetIdePlatform": "IU",
         "ideaVersion": "2023.2",
         "sinceBuildPluginXml": "232",
+        "untilBuildPluginXml": "232.*"
+    },
+    {
+        "targetIdePlatform": "IU",
+        "ideaVersion": "2023.3",
+        "sinceBuildPluginXml": "233",
         "untilBuildPluginXml": "233.*"
+    },
+    {
+        "targetIdePlatform": "IU",
+        "ideaVersion": "2024.1",
+        "sinceBuildPluginXml": "241",
+        "untilBuildPluginXml": "241.*"
+    },
+    {
+        "targetIdePlatform": "IU",
+        "ideaVersion": "2024.2",
+        "sinceBuildPluginXml": "242",
+        "untilBuildPluginXml": "243.*"
     }
 ]
 
