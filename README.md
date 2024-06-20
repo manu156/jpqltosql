@@ -4,6 +4,8 @@
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/22023-jpql-to-sql.svg)](https://plugins.jetbrains.com/plugin/22023-jpql-to-sql)  
 Get it from Marketplace: [Get This Plugin](https://plugins.jetbrains.com/plugin/22023-jpql-to-sql)
 <br>
+<i>Please use latest version of IDE (as older versions will not recieve plugin updates)</i>
+<br>
 <br>
 <img src="./media/screenshot1.png" width="700" height="485" />
 
