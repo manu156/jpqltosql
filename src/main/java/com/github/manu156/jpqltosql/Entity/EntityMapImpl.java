@@ -89,6 +89,14 @@ public class EntityMapImpl implements EntityMap {
                     break;
                 }
             }
+            if (psiEntityAnnotation == null) {
+                for (String tableAnnotationName : tableAnnotationNames) {
+                    psiEntityAnnotation = psiClass.getAnnotation(tableAnnotationName);
+                    if (psiEntityAnnotation != null) {
+                        break;
+                    }
+                }
+            }
 
             if (null == psiEntityAnnotation)
                 continue;
