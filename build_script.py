@@ -10,7 +10,7 @@ source_string = """
 # 
 pluginGroup = com.github.manu156
 pluginName = jpql2sql
-pluginVersion=1.3.0
+pluginVersion=1.3.1
 pluginRepositoryUrl = https://github.com/manu156/jpqltosql
 
 """
@@ -51,7 +51,20 @@ ic_versions = [
         "ideaVersion": "2024.1",
         "sinceBuildPluginXml": "241",
         "untilBuildPluginXml": "241.*"
+    },
+    {
+        "targetIdePlatform": "IC",
+        "ideaVersion": "2024.2.1",
+        "sinceBuildPluginXml": "242",
+        "untilBuildPluginXml": "242.*"
+    },
+    {
+         "targetIdePlatform": "IC",
+         "ideaVersion": "243.12818-EAP-CANDIDATE-SNAPSHOT",
+         "sinceBuildPluginXml": "243",
+         "untilBuildPluginXml": "243.*"
     }
+    # for snapshots see https://www.jetbrains.com/intellij-repository/snapshots
 ]
 
 iu_versions = [
@@ -90,7 +103,20 @@ iu_versions = [
         "ideaVersion": "2024.1",
         "sinceBuildPluginXml": "241",
         "untilBuildPluginXml": "241.*"
+    },
+    {
+        "targetIdePlatform": "IU",
+        "ideaVersion": "2024.2.1",
+        "sinceBuildPluginXml": "242",
+        "untilBuildPluginXml": "242.*"
+    },
+    {
+        "targetIdePlatform": "IU",
+        "ideaVersion": "243.12818-EAP-CANDIDATE-SNAPSHOT",
+        "sinceBuildPluginXml": "243",
+        "untilBuildPluginXml": "243.*"
     }
+    # for snapshots see https://www.jetbrains.com/intellij-repository/snapshots
 ]
 
 properties_file = "gradle.properties"
